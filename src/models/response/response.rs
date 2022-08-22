@@ -1,12 +1,9 @@
 use actix_web::HttpResponse;
-use json::JsonValue;
-use json::object::Object;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use crate::cores::biz_code;
 
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Response<T> {
     pub code: Option<String>,
     pub msg: Option<String>,
@@ -18,41 +15,36 @@ impl<T> Response<T>
         T: Serialize + DeserializeOwned + Clone,
 {
     pub fn from_result(arg: &Result<T, String>) -> Self {
-        match arg {
-            Ok(data) => Self {
+        if arg.is_ok() {
+            let data = arg.as_ref().ok().unwrap();
+            return Self {
                 code: Some("0".to_owned()),
                 msg: None,
                 data: Some(data.clone()),
-            },
-            Err(e) => {
-                let p = json::parse(e);
-                match p {
-                    Ok(data) => {
-                        Self {
-                            code: Some(data["code"].take_string().unwrap()),
-                            msg: Some(data["message"].take_string().unwrap()),
-                            data: None,
-                        }
-                    }
-                    Err(e) => Self{
-                        code: Some("500".to_owned()),
-                        msg: Some("server error".to_owned()),
-                        data: None,
-                    }
-                }
             }
         }
-    }
 
-    pub fn from(arg: &T) -> Self {
-        Self {
-            code: Some("S".to_string()),
-            msg: None,
-            data: Some(arg.clone()),
+        let data = arg.as_ref().err().unwrap();
+        let r = json::parse(data.as_str());
+        if r.is_ok() {
+            let json = r.as_ref().ok().unwrap();
+            let code = json["code"].to_string();
+            let message = json["msg"].to_string();
+            return Self {
+                code: Some(code),
+                msg: Some(message),
+                data: None,
+            }
+        }
+
+        return Self{
+            code: Some("500".to_owned()),
+            msg: Some("server error".to_owned()),
+            data: None,
         }
     }
 
-    pub fn to_json_resp(&self) -> actix_http::Response {
+    pub fn to_json_resp(&self) -> HttpResponse {
         return HttpResponse::Ok()
             .content_type("json")
             .body(self.to_string());

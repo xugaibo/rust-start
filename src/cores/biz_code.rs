@@ -1,12 +1,14 @@
-use std::panic;
-use serde::__private::de::IdentifierDeserializer;
-
-pub enum BizCode {
-    Of(i16, String)
+pub struct BizCode {
+    pub code: String,
+    pub message: String,
 }
 
-pub fn ParamInvalid() -> BizCode{
-    return BizCode::Of(1, "param invalid".parse().unwrap());
+pub fn param_invalid() -> BizCode {
+    return BizCode { code: "1".to_string(), message: "param invalid".parse().unwrap() };
+}
+
+pub fn ok() -> BizCode {
+    return BizCode { code: "0".to_string(), message: "ok".parse().unwrap() };
 }
 
 
