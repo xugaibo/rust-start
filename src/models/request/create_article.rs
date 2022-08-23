@@ -1,6 +1,6 @@
 use crate::cores::biz_code::{biz, BizCode};
 use serde::Deserialize;
-use crate::cores::biz_code::{CLIENT_ERROR, PASSWORD_INVALID};
+use crate::cores::biz_code::{CLIENT_ERROR};
 
 #[derive(Deserialize)]
 #[serde(default)]

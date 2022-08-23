@@ -8,10 +8,9 @@ mod service;
 
 use actix_web::{web, App, HttpServer};
 use apis::article;
-use db::user::Entity as userDao;
-use sea_orm::{DatabaseConnection, EntityTrait};
+
 use crate::cores::context::Context;
-use crate::db::{user};
+
 
 
 #[actix_web::main]
