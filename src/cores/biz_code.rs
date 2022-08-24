@@ -1,3 +1,5 @@
+use phf::{phf_map};
+
 pub struct BizCode {
     pub code: i16,
     pub message: String,
@@ -18,10 +20,45 @@ pub const PHONE_INVALID: i16 = 20002;
 pub const USER_NOT_EXISTS: i16 = 20003;
 pub const PASSWORD_INVALID: i16 = 20004;
 
+// const map = HashMap::new();
+
+static KV: phf::Map<&'static str, &'static str> = phf_map! {
+    "0" => "success",
+    "500" => "server error",
+    "400" => "client error",
+    "4040" => "data not dound",
+    "10001" => "token invalid",
+    "10002" => "token expire",
+    "10003" => "refresh token invalid",
+    "10004" => "refresh token expire",
+    "20001" => "user name exists",
+    "20002" => "phone invalid",
+    "20003" => "user not exists",
+    "20004" => "password invalid",
+};
+
+pub fn from_code(code: i16) -> BizCode {
+    let message = KV.get(code.to_string().as_ref());
+    if message.is_none() {
+        return server_error();
+    }
+
+    return BizCode {
+        code,
+        message: message.unwrap().to_string(),
+    };
+}
 pub fn server_error() -> BizCode {
     return BizCode {
         code: SERVER_ERROR,
         message: "server_err".parse().unwrap(),
+    };
+}
+
+pub fn token_invalid() -> BizCode {
+    return BizCode {
+        code: TOKEN_INVALID,
+        message: "token_invalid".parse().unwrap(),
     };
 }
 
@@ -33,8 +70,8 @@ pub fn ok() -> BizCode {
 }
 
 pub fn biz(code: i16, message: &str) -> BizCode {
-    BizCode{
+    BizCode {
         code,
-        message: message.parse().unwrap()
+        message: message.parse().unwrap(),
     }
 }
