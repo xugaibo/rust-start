@@ -3,9 +3,9 @@ use std::future::{ready, Ready};
 use actix_web::{dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform}, Error};
 use actix_web::body::EitherBody;
 use futures_util::future::LocalBoxFuture;
-use crate::cores::biz_code::{from_code, token_invalid, TOKEN_INVALID};
-use crate::cores::jwt::JWTToken;
+use crate::cores::biz_code::{from_code, TOKEN_EXPIRE, token_invalid, TOKEN_INVALID};
 use crate::models::response::response::Response;
+use crate::service::token::validate_token;
 
 pub struct TokenCheck;
 
@@ -60,14 +60,14 @@ impl<S, B> Service<ServiceRequest> for TokenCheckMid<S>
             return Response::<i32>::from_biz_right(from_code(TOKEN_INVALID), req);
         }
 
-        let r = JWTToken::verify("123", token);
+        let r = validate_token(token);
         if r.is_err() {
             return Response::<i32>::from_biz_right(token_invalid(), req);
         }
 
         let is_expire = r.ok().unwrap().is_expire();
         if is_expire {
-            return Response::<i32>::from_biz_right(token_invalid(), req);
+            return Response::<i32>::from_biz_right(from_code(TOKEN_EXPIRE), req);
         }
 
         let fut = self.service.call(req);

@@ -1,4 +1,5 @@
 use phf::{phf_map};
+use validator::{ValidationErrors};
 
 pub struct BizCode {
     pub code: i16,
@@ -75,3 +76,14 @@ pub fn biz(code: i16, message: &str) -> BizCode {
         message: message.parse().unwrap(),
     }
 }
+
+pub fn from_valid_error(r: Result<(), ValidationErrors>) -> Result<(), BizCode> {
+    if r.is_ok() {
+        return Ok(());
+    }
+    let error = r.err().unwrap().to_string();
+    let error = biz(CLIENT_ERROR,&error);
+    return Err(error);
+}
+
+
